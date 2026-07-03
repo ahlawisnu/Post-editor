@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STARK Editor — Post Template Builder</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/roboto@latest/latin-400-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/roboto@latest/latin-500-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/roboto@latest/latin-700-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/orbitron@latest/latin-700-normal.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/material-icons@1.13.12/iconfont/material-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  :root {
+    --iron-red: #B71C1C;
+    --iron-red-light: #E53935;
+    --iron-gold: #FFC107;
+    --iron-gold-light: #FFD54F;
+    --iron-dark: #0a0a0a;
+    --iron-surface: #1a1a1a;
+    --iron-surface-2: #242424;
+    --iron-surface-3: #2e2e2e;
+    --iron-border: #3a3a3a;
+    --iron-text: #f5f5f5;
+    --iron-text-dim: #9e9e9e;
+    --iron-glow: 0 0 20px rgba(255, 193, 7, 0.4);
+    --iron-glow-red: 0 0 20px rgba(229, 57, 53, 0.5);
+  }
+
+  html, body {
+    font-family: 'Roboto', sans-serif;
+    background: var(--iron-dark);
+    color: var(--iron-text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 10% 20%, rgba(183, 28, 28, 0.15) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(255, 193, 7, 0.08) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* HEADER */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(180deg, #0d0d0d 0%, #1a1a1a 100%);
+    border-bottom: 1px solid var(--iron-border);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    padding: 14px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .arc-reactor {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff 0%, var(--iron-gold) 30%, var(--iron-red) 70%, transparent 100%);
+    box-shadow: var(--iron-glow), inset 0 0 10px rgba(255,255,255,0.5);
+    position: relative;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .arc-reactor::before {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.8);
+    border-top-color: transparent;
+    animation: spin 4s linear infinite;
+  }
+  .arc-reactor::after {
+    content: '';
+    position: absolute;
+    inset: 12px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 15px #fff;
+  }
+
+  @keyframes pulse {
+    0%, 100% { box-shadow: var(--iron-glow), inset 0 0 10px rgba(255,255,255,0.5); }
+    50% { box-shadow: 0 0 30px rgba(255, 193, 7, 0.7), inset 0 0 15px rgba(255,255,255,0.8); }
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .logo-text h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    background: linear-gradient(90deg, var(--iron-gold-light), var(--iron-gold), var(--iron-red-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 2px;
+  }
+  .logo-text p {
+    font-size: 11px;
+    color: var(--iron-text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border: none;
+    border-radius: 6px;
+    font-family: 'Roboto', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn .material-icons { font-size: 18px; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--iron-red) 0%, var(--iron-red-light) 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(183, 28, 28, 0.4);
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(183, 28, 28, 0.6);
+  }
+
+  .btn-gold {
+    background: linear-gradient(135deg, var(--iron-gold) 0%, var(--iron-gold-light) 100%);
+    color: #1a1a1a;
+    box-shadow: 0 2px 8px rgba(255, 193, 7, 0.4);
+  }
+  .btn-gold:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(255, 193, 7, 0.6);
+  }
+
+  .btn-ghost {
+    background: var(--iron-surface-2);
+    color: var(--iron-text);
+    border: 1px solid var(--iron-border);
+  }
+  .btn-ghost:hover {
+    background: var(--iron-surface-3);
+    border-color: var(--iron-gold);
+  }
+
+  .btn-icon {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  /* MAIN LAYOUT */
+  main {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 1024px) {
+    main { grid-template-columns: 1fr; }
+  }
+
+  /* PANELS */
+  .panel {
+    background: var(--iron-surface);
+    border: 1px solid var(--iron-border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    background: linear-gradient(90deg, rgba(183, 28, 28, 0.15) 0%, transparent 100%);
+    border-bottom: 1px solid var(--iron-border);
+  }
+
+  .panel-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--iron-gold);
+  }
+  .panel-title .material-icons {
+    color: var(--iron-red-light);
+  }
+
+  .panel-body {
+    padding: 20px;
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
+  }
+
+  .panel-body::-webkit-scrollbar { width: 8px; }
+  .panel-body::-webkit-scrollbar-track { background: var(--iron-dark); }
+  .panel-body::-webkit-scrollbar-thumb {
+    background: var(--iron-border);
+    border-radius: 4px;
+  }
+  .panel-body::-webkit-scrollbar-thumb:hover { background: var(--iron-red); }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 12px 20px;
+    background: var(--iron-surface-2);
+    border-bottom: 1px solid var(--iron-border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    padding: 8px 16px;
+    background: transparent;
+    border: none;
+    color: var(--iron-text-dim);
+    font-family: 'Roboto', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tab .material-icons { font-size: 16px; }
+  .tab:hover { color: var(--iron-text); background: var(--iron-surface-3); }
+  .tab.active {
+    background: linear-gradient(135deg, var(--iron-red) 0%, var(--iron-red-light) 100%);
+    color: white;
+    box-shadow: 0 2px 8px rgba(183, 28, 28, 0.4);
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* FORM FIELDS */
+  .field-group {
+    margin-bottom: 18px;
+  }
+  .field-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--iron-gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .field-label .hint {
+    font-size: 10px;
+    color: var(--iron-text-dim);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .input, .textarea, .select {
+    width: 100%;
+    padding: 12px 14px;
+    background: var(--iron-surface-2);
+    border: 1px solid var(--iron-border);
+    border-radius: 6px;
+    color: var(--iron-text);
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    transition: all 0.2s;
+    outline: none;
+  }
+  .input:focus, .textarea:focus, .select:focus {
+    border-color: var(--iron-gold);
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.15);
+    background: var(--iron-surface-3);
+  }
+  .textarea {
+    resize: vertical;
+    min-height: 100px;
+    font-family: 'Roboto Mono', monospace;
+    line-height: 1.5;
+  }
+
+  .input[readonly] {
+    background: var(--iron-dark);
+    color: var(--iron-text-dim);
+    cursor: not-allowed;
+  }
+
+  /* FIXED CATEGORY CHIPS */
+  .category-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+
+  .category-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    background: var(--iron-surface-2);
+    border: 1px solid var(--iron-border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+  }
+  .category-chip::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--iron-red) 0%, var(--iron-red-light) 100%);
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 0;
+  }
+  .category-chip:hover {
+    border-color: var(--iron-gold);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+  .category-chip .cat-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--iron-surface-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--iron-text-dim);
+    transition: all 0.2s;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .category-chip .cat-icon .material-icons { font-size: 18px; }
+  .category-chip .cat-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--iron-text);
+    position: relative;
+    z-index: 1;
+    letter-spacing: 0.3px;
+  }
+  .category-chip .cat-check {
+    margin-left: auto;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--iron-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    position: relative;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+  .category-chip .cat-check .material-icons {
+    font-size: 14px;
+    color: white;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.2s;
+  }
+
+  /* SELECTED STATE */
+  .category-chip.selected {
+    border-color: var(--iron-gold);
+    box-shadow: 0 0 0 1px var(--iron-gold), 0 4px 12px rgba(255, 193, 7, 0.2);
+  }
+  .category-chip.selected::before {
+    opacity: 0.15;
+  }
+  .category-chip.selected .cat-icon {
+    background: var(--iron-gold);
+    color: var(--iron-dark);
+    box-shadow: 0 0 12px rgba(255, 193, 7, 0.4);
+  }
+  .category-chip.selected .cat-label {
+    color: var(--iron-gold-light);
+    font-weight: 700;
+  }
+  .category-chip.selected .cat-check {
+    background: var(--iron-gold);
+    border-color: var(--iron-gold);
+  }
+  .category-chip.selected .cat-check .material-icons {
+    opacity: 1;
+    transform: scale(1);
+    color: var(--iron-dark);
+  }
+
+  .category-chip:active {
+    transform: scale(0.98);
+  }
+
+  .category-count {
+    font-size: 11px;
+    color: var(--iron-text-dim);
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .category-count .material-icons { font-size: 14px; color: var(--iron-gold); }
+
+  /* BODY SECTION ITEM */
+  .body-section-item {
+    background: var(--iron-surface-2);
+    border: 1px solid var(--iron-border);
+    border-left: 3px solid var(--iron-gold);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 14px;
+    position: relative;
+    transition: all 0.2s;
+  }
+  .body-section-item:hover {
+    border-left-color: var(--iron-red-light);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+  }
+
+  .body-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .body-section-header .drag-handle {
+    cursor: grab;
+    color: var(--iron-text-dim);
+    display: flex;
+    padding: 4px;
+  }
+  .body-section-header .drag-handle:active { cursor: grabbing; }
+  .body-section-header .section-number {
+    background: var(--iron-red);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .body-section-header .heading-input {
+    flex: 1;
+    font-size: 15px;
+    font-weight: 500;
+    padding: 8px 12px;
+    background: var(--iron-dark);
+    border: 1px solid var(--iron-border);
+    border-radius: 6px;
+    color: var(--iron-gold);
+    font-family: 'Orbitron', sans-serif;
+    letter-spacing: 0.5px;
+  }
+  .body-section-header .heading-input:focus {
+    border-color: var(--iron-gold);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.15);
+  }
+  .body-section-header .heading-input::placeholder {
+    color: var(--iron-text-dim);
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+
+  .body-section-content {
+    width: 100%;
+    min-height: 120px;
+    padding: 12px 14px;
+    background: var(--iron-dark);
+    border: 1px solid var(--iron-border);
+    border-radius: 6px;
+    color: var(--iron-text);
+    font-family: 'Roboto Mono', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    transition: all 0.2s;
+  }
+  .body-section-content:focus {
+    border-color: var(--iron-gold);
+    box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.15);
+  }
+  .body-section-content::placeholder {
+    color: var(--iron-text-dim);
+    font-family: 'Roboto', sans-serif;
+    font-style: italic;
+  }
+
+  .body-section-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--iron-border);
+  }
+  .body-section-footer .format-hint {
+    font-size: 11px;
+    color: var(--iron-text-dim);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .body-section-footer .format-hint .material-icons { font-size: 14px; color: var(--iron-gold); }
+
+  .field-actions {
+    display: flex;
+    gap: 4px;
+  }
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: var(--iron-surface-3);
+    color: var(--iron-text-dim);
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .icon-btn:hover:not(:disabled) {
+    background: var(--iron-red);
+    color: white;
+  }
+  .icon-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .icon-btn .material-icons { font-size: 18px; }
+
+  /* PREVIEW */
+  .yaml-preview {
+    background: #0d0d0d;
+    border: 1px solid var(--iron-border);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: 'Roboto Mono', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #e0e0e0;
+    white-space: pre-wrap;
+    word-break: break-word;
+    overflow-x: auto;
+  }
+  .yaml-preview .key { color: var(--iron-gold); }
+  .yaml-preview .string { color: #81c784; }
+  .yaml-preview .number { color: #64b5f6; }
+  .yaml-preview .punct { color: var(--iron-red-light); }
+
+  .markdown-preview {
+    background: var(--iron-surface-2);
+    border: 1px solid var(--iron-border);
+    border-radius: 8px;
+    padding: 20px;
+    line-height: 1.7;
+  }
+  .markdown-preview h1, .markdown-preview h2, .markdown-preview h3 {
+    color: var(--iron-gold);
+    margin: 16px 0 10px;
+    font-family: 'Orbitron', sans-serif;
+  }
+  .markdown-preview h1 { font-size: 24px; border-bottom: 1px solid var(--iron-border); padding-bottom: 8px; }
+  .markdown-preview h2 { font-size: 20px; }
+  .markdown-preview h3 { font-size: 16px; }
+  .markdown-preview p { margin-bottom: 12px; }
+  .markdown-preview code {
+    background: var(--iron-dark);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--iron-red-light);
+    font-size: 0.9em;
+  }
+  .markdown-preview pre {
+    background: var(--iron-dark);
+    padding: 12px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 12px 0;
+    border-left: 3px solid var(--iron-gold);
+  }
+  .markdown-preview pre code { background: transparent; padding: 0; }
+  .markdown-preview ul, .markdown-preview ol { padding-left: 24px; margin-bottom: 12px; }
+  .markdown-preview li { margin-bottom: 4px; }
+  .markdown-preview strong { color: var(--iron-gold-light); }
+  .markdown-preview em { color: var(--iron-red-light); }
+  .markdown-preview a { color: var(--iron-gold); }
+  .markdown-preview blockquote {
+    border-left: 3px solid var(--iron-red);
+    padding-left: 16px;
+    color: var(--iron-text-dim);
+    margin: 12px 0;
+    font-style: italic;
+  }
+
+  /* SNACKBAR */
+  .snackbar {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--iron-surface-2);
+    color: var(--iron-text);
+    padding: 14px 24px;
+    border-radius: 8px;
+    border: 1px solid var(--iron-gold);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5), var(--iron-glow);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+    transition: transform 0.3s ease;
+    font-size: 14px;
+  }
+  .snackbar.show { transform: translateX(-50%) translateY(0); }
+  .snackbar .material-icons { color: var(--iron-gold); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--iron-text-dim);
+  }
+  .empty-state .material-icons {
+    font-size: 48px;
+    color: var(--iron-border);
+    margin-bottom: 12px;
+  }
+  .empty-state p { font-size: 14px; }
+
+  /* SECTION DIVIDER */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 24px 0 14px;
+    font-size: 11px;
+    color: var(--iron-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .section-divider::before, .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--iron-border), transparent);
+  }
+
+  /* PLACEHOLDER BUTTON */
+  .placeholder-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: transparent;
+    border: 1px dashed var(--iron-gold);
+    color: var(--iron-gold);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 8px;
+  }
+  .placeholder-btn:hover {
+    background: rgba(255, 193, 7, 0.1);
+  }
+  .placeholder-btn .material-icons { font-size: 16px; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    header { padding: 12px 16px; }
+    .logo-text h1 { font-size: 16px; }
+    .logo-text p { font-size: 9px; letter-spacing: 2px; }
+    main { padding: 12px; gap: 12px; }
+    .panel-body { padding: 16px; }
+    .btn { padding: 8px 12px; font-size: 12px; }
+    .btn span:not(.material-icons) { display: none; }
+    .body-section-header { flex-wrap: wrap; }
+    .body-section-header .heading-input { min-width: 100%; order: 3; margin-top: 4px; }
+    .category-options { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
+  .modal {
+    background: var(--iron-surface);
+    border: 1px solid var(--iron-gold);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.6), var(--iron-glow);
+  }
+  .modal h3 {
+    color: var(--iron-gold);
+    font-family: 'Orbitron', sans-serif;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="arc-reactor"></div>
+    <div class="logo-text">
+      <h1>STARK EDITOR</h1>
+      <p>Post Template Builder</p>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="resetAll()">
+      <span class="material-icons">refresh</span>
+      <span>Reset</span>
+    </button>
+    <button class="btn btn-ghost" onclick="exportJSON()">
+      <span class="material-icons">download</span>
+      <span>Export</span>
+    </button>
+    <button class="btn btn-ghost" onclick="document.getElementById('importFile').click()">
+      <span class="material-icons">upload</span>
+      <span>Import</span>
+    </button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+    <button class="btn btn-gold" onclick="copyOutput()">
+      <span class="material-icons">content_copy</span>
+      <span>Copy</span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <!-- EDITOR PANEL -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <span class="material-icons">edit_note</span>
+        Editor
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="basic">
+        <span class="material-icons">info</span> Basic
+      </button>
+      <button class="tab" data-tab="ai">
+        <span class="material-icons">auto_awesome</span> AI
+      </button>
+      <button class="tab" data-tab="params">
+        <span class="material-icons">tune</span> Params
+      </button>
+      <button class="tab" data-tab="body">
+        <span class="material-icons">article</span> Body
+      </button>
+    </div>
+
+    <div class="panel-body">
+      <!-- BASIC TAB -->
+      <div class="tab-content active" id="tab-basic">
+        <div class="field-group">
+          <label class="field-label">Layout <span class="hint">(fixed)</span></label>
+          <input type="text" class="input" value="post" readonly>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Title</label>
+          <input type="text" class="input" id="f-title" placeholder="Masukkan judul post...">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Date <span class="hint">(auto)</span></label>
+          <input type="date" class="input" id="f-date">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">
+            Categories
+            <span class="hint">Pilih satu atau lebih</span>
+          </label>
+          <div class="category-options" id="category-options"></div>
+          <div class="category-count" id="category-count">
+            <span class="material-icons">info</span>
+            <span>Belum ada kategori dipilih</span>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Image Path</label>
+          <input type="text" class="input" id="f-image" placeholder="https://urlgambarmu.jpg">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Description</label>
+          <textarea class="textarea" id="f-description" rows="3" placeholder="Deskripsi singkat post..."></textarea>
+        </div>
+      </div>
+
+      <!-- AI TAB -->
+      <div class="tab-content" id="tab-ai">
+        <div class="field-group">
+          <label class="field-label">Model</label>
+          <input type="text" class="input" id="f-model" placeholder="Midjourney v6.1">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Prompt</label>
+          <textarea class="textarea" id="f-prompt" rows="6" placeholder="Detail prompt untuk generate image..."></textarea>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Negative Prompt</label>
+          <textarea class="textarea" id="f-negative-prompt" rows="3" placeholder="Hal yang ingin dihindari..."></textarea>
+        </div>
+      </div>
+
+      <!-- PARAMS TAB -->
+      <div class="tab-content" id="tab-params">
+        <div class="section-divider">Parameters</div>
+        <div id="params-list"></div>
+        <button class="btn btn-ghost" onclick="addParameter()" style="margin-top:8px">
+          <span class="material-icons">add</span>
+          <span>Tambah Parameter</span>
+        </button>
+      </div>
+
+      <!-- BODY TAB -->
+      <div class="tab-content" id="tab-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+          <div class="section-divider" style="margin:0;flex:1;min-width:200px">Body Sections</div>
+          <button class="placeholder-btn" onclick="loadPlaceholder()">
+            <span class="material-icons">auto_fix_high</span>
+            Load Example
+          </button>
+        </div>
+
+        <div id="body-sections-list"></div>
+        
+        <button class="btn btn-primary" onclick="addBodySection()" style="margin-top:8px;width:100%">
+          <span class="material-icons">add</span>
+          <span>Tambah Section</span>
+        </button>
+
+        <div class="empty-state" id="body-empty">
+          <span class="material-icons">library_books</span>
+          <p>Belum ada section. Klik tombol di atas untuk menambahkan, atau gunakan <strong style="color:var(--iron-gold)">Load Example</strong> untuk memuat contoh.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PREVIEW PANEL -->
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">
+        <span class="material-icons">visibility</span>
+        Live Preview
+      </div>
+      <button class="btn btn-gold" onclick="copyOutput()">
+        <span class="material-icons">content_copy</span>
+        <span>Copy</span>
+      </button>
+    </div>
+
+    <div class="preview-tabs tabs">
+      <button class="tab active" data-preview="yaml">
+        <span class="material-icons">code</span> YAML
+      </button>
+      <button class="tab" data-preview="rendered">
+        <span class="material-icons">preview</span> Rendered
+      </button>
+      <button class="tab" data-preview="raw">
+        <span class="material-icons">text_snippet</span> Raw
+      </button>
+    </div>
+
+    <div class="panel-body">
+      <div class="tab-content active" id="preview-yaml">
+        <div class="yaml-preview" id="yaml-output"></div>
+      </div>
+      <div class="tab-content" id="preview-rendered">
+        <div class="markdown-preview" id="rendered-output"></div>
+      </div>
+      <div class="tab-content" id="preview-raw">
+        <pre class="yaml-preview" id="raw-output" style="white-space:pre-wrap"></pre>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- SNACKBAR -->
+<div class="snackbar" id="snackbar">
+  <span class="material-icons">check_circle</span>
+  <span id="snackbar-text">Berhasil!</span>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal">
+    <h3 id="confirmTitle">Konfirmasi</h3>
+    <p id="confirmMessage" style="color:var(--iron-text-dim);line-height:1.6"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Batal</button>
+      <button class="btn btn-primary" id="confirmOk">Hapus</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ============ STATE ============
+  let state = {
+    title: '',
+    date: new Date().toISOString().split('T')[0],
+    categories: [],
+    image: '',
+    description: '',
+    model: '',
+    prompt: '',
+    negative_prompt: '',
+    parameters: {},
+    bodySections: []
+  };
+
+  // Fixed category options with icons
+  const CATEGORY_OPTIONS = [
+    { value: 'Portrait', icon: 'face', label: 'Portrait' },
+    { value: 'Landscape', icon: 'landscape', label: 'Landscape' },
+    { value: 'Abstract', icon: 'auto_awesome', label: 'Abstract' },
+    { value: 'Random', icon: 'shuffle', label: 'Random' },
+    { value: 'Fantasy', icon: 'auto_fix_high', label: 'Fantasy' }
+  ];
+
+  // Load from localStorage
+  try {
+    const saved = localStorage.getItem('stark-editor-state-v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      state = { ...state, ...parsed };
+      // Filter categories to only valid options
+      state.categories = (state.categories || []).filter(c => 
+        CATEGORY_OPTIONS.some(opt => opt.value === c)
+      );
+    }
+  } catch(e) {}
+
+  // ============ TABS ============
+  document.querySelectorAll('.tab[data-tab]').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab[data-tab]').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('#tab-basic, #tab-ai, #tab-params, #tab-body').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.tab[data-preview]').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab[data-preview]').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('#preview-yaml, #preview-rendered, #preview-raw').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('preview-' + tab.dataset.preview).classList.add('active');
+    });
+  });
+
+  // ============ BASIC FIELDS ============
+  const basicFields = ['title', 'date', 'image', 'description'];
+  basicFields.forEach(id => {
+    const el = document.getElementById('f-' + id);
+    el.value = state[id] || '';
+    el.addEventListener('input', () => {
+      state[id] = el.value;
+      saveAndRender();
+    });
+  });
+
+  // AI fields
+  ['model', 'prompt', 'negative-prompt'].forEach(id => {
+    const key = id.replace('-', '_');
+    const el = document.getElementById('f-' + id);
+    el.value = state[key] || '';
+    el.addEventListener('input', () => {
+      state[key] = el.value;
+      saveAndRender();
+    });
+  });
+
+  // ============ FIXED CATEGORIES ============
+  function renderCategories() {
+    const container = document.getElementById('category-options');
+    container.innerHTML = '';
+
+    CATEGORY_OPTIONS.forEach(opt => {
+      const isSelected = state.categories.includes(opt.value);
+      const chip = document.createElement('div');
+      chip.className = 'category-chip' + (isSelected ? ' selected' : '');
+      chip.dataset.value = opt.value;
+      chip.innerHTML = `
+        <div class="cat-icon">
+          <span class="material-icons">${opt.icon}</span>
+        </div>
+        <div class="cat-label">${opt.label}</div>
+        <div class="cat-check">
+          <span class="material-icons">check</span>
+        </div>
+      `;
+      chip.addEventListener('click', () => toggleCategory(opt.value));
+      container.appendChild(chip);
+    });
+
+    // Update count indicator
+    const countEl = document.getElementById('category-count');
+    const count = state.categories.length;
+    if (count === 0) {
+      countEl.innerHTML = '<span class="material-icons">info</span><span>Belum ada kategori dipilih</span>';
+    } else {
+      countEl.innerHTML = `<span class="material-icons">check_circle</span><span>${count} kategori dipilih: <strong style="color:var(--iron-gold)">${state.categories.join(', ')}</strong></span>`;
+    }
+  }
+
+  function toggleCategory(value) {
+    const idx = state.categories.indexOf(value);
+    if (idx >= 0) {
+      state.categories.splice(idx, 1);
+    } else {
+      state.categories.push(value);
+    }
+    renderCategories();
+    saveAndRender();
+  }
+
+  renderCategories();
+
+  // ============ PARAMETERS ============
+  function renderParameters() {
+    const container = document.getElementById('params-list');
+    container.innerHTML = '';
+    const entries = Object.entries(state.parameters);
+    if (entries.length === 0) {
+      container.innerHTML = '<div style="color:var(--iron-text-dim);font-size:13px;padding:12px 0">Belum ada parameter</div>';
+      return;
+    }
+    entries.forEach(([key, value]) => {
+      const item = document.createElement('div');
+      item.className = 'custom-field-item';
+      item.style.cssText = 'background:var(--iron-surface-2);border:1px solid var(--iron-border);border-left:3px solid var(--iron-gold);border-radius:8px;padding:14px;margin-bottom:12px';
+      item.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 2fr auto;gap:10px;align-items:start">
+          <input type="text" class="input" value="${escapeHtml(key)}" data-old-key="${escapeHtml(key)}" data-type="param-key" placeholder="Key">
+          <input type="text" class="input" value="${escapeHtml(value)}" data-old-key="${escapeHtml(key)}" data-type="param-value" placeholder="Value">
+          <div style="display:flex;gap:4px">
+            <button class="icon-btn" onclick="deleteParameter('${escapeHtml(key)}')" title="Hapus">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+        </div>
+      `;
+      container.appendChild(item);
+    });
+
+    container.querySelectorAll('input[data-type="param-key"]').forEach(inp => {
+      inp.addEventListener('change', e => {
+        const oldKey = e.target.dataset.oldKey;
+        const newKey = e.target.value.trim();
+        if (!newKey || newKey === oldKey) return;
+        if (state.parameters[newKey] !== undefined) {
+          showSnackbar('Key sudah ada', 'warning');
+          e.target.value = oldKey;
+          return;
+        }
+        const value = state.parameters[oldKey];
+        delete state.parameters[oldKey];
+        state.parameters[newKey] = value;
+        renderParameters();
+        saveAndRender();
+      });
+    });
+    container.querySelectorAll('input[data-type="param-value"]').forEach(inp => {
+      inp.addEventListener('input', e => {
+        const key = e.target.dataset.oldKey;
+        state.parameters[key] = e.target.value;
+        saveAndRender();
+      });
+    });
+  }
+
+  function addParameter() {
+    let newKey = 'NewParam';
+    let i = 1;
+    while (state.parameters[newKey] !== undefined) {
+      newKey = 'NewParam' + i++;
+    }
+    state.parameters[newKey] = '';
+    renderParameters();
+    saveAndRender();
+    showSnackbar('Parameter ditambahkan');
+  }
+
+  function deleteParameter(key) {
+    showConfirm('Hapus Parameter', `Hapus parameter "${key}"?`, () => {
+      delete state.parameters[key];
+      renderParameters();
+      saveAndRender();
+    });
+  }
+
+  renderParameters();
+
+  // ============ BODY SECTIONS ============
+  const PLACEHOLDER_EXAMPLES = [
+    {
+      heading: '🌃 Konsep',
+      content: 'Ide karya ini terinspirasi dari film *Blade Runner 2049* dan estetika kota Tokyo/Shibuya di malam hari. Saya ingin menangkap atmosfer **hujan deras** yang memantulkan cahaya neon ke jalanan basah — menciptakan kedalaman visual yang dramatis.'
+    },
+    {
+      heading: '🎨 Proses Kreatif',
+      content: '1. **Riset referensi**: Mengumpulkan 20+ referensi visual dari Pinterest dan ArtStation\n2. **Iterasi prompt**: Melakukan 15+ variasi prompt untuk menemukan komposisi terbaik\n3. **Upscaling**: Menggunakan Topaz Gigapixel AI untuk meningkatkan resolusi ke 4K\n4. **Color grading**: Penyesuaian akhir di Lightroom untuk memperkuat tone cyan-magenta'
+    },
+    {
+      heading: '💡 Tips',
+      content: '- Gunakan `--style raw` untuk hasil yang lebih fotorealistik\n- Kata kunci `volumetric fog` dan `cinematic lighting` sangat berpengaruh pada atmosfer\n- Aspect ratio 16:9 cocok untuk wallpaper desktop'
+    }
+  ];
+
+  function renderBodySections() {
+    const container = document.getElementById('body-sections-list');
+    const empty = document.getElementById('body-empty');
+    container.innerHTML = '';
+
+    if (state.bodySections.length === 0) {
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    state.bodySections.forEach((section, i) => {
+      const item = document.createElement('div');
+      item.className = 'body-section-item';
+      item.innerHTML = `
+        <div class="body-section-header">
+          <div class="drag-handle" title="Section ${i+1}">
+            <span class="material-icons">drag_indicator</span>
+          </div>
+          <div class="section-number">${i+1}</div>
+          <input type="text" class="heading-input" value="${escapeHtml(section.heading)}" data-idx="${i}" data-type="bs-heading" placeholder="## Heading Section (misal: 🌃 Konsep)">
+          <div class="field-actions">
+            <button class="icon-btn" onclick="moveBodySection(${i}, -1)" title="Naik" ${i === 0 ? 'disabled' : ''}>
+              <span class="material-icons">arrow_upward</span>
+            </button>
+            <button class="icon-btn" onclick="moveBodySection(${i}, 1)" title="Turun" ${i === state.bodySections.length - 1 ? 'disabled' : ''}>
+              <span class="material-icons">arrow_downward</span>
+            </button>
+            <button class="icon-btn" onclick="duplicateBodySection(${i})" title="Duplikat">
+              <span class="material-icons">content_copy</span>
+            </button>
+            <button class="icon-btn" onclick="deleteBodySection(${i})" title="Hapus">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+        </div>
+        <textarea class="body-section-content" data-idx="${i}" data-type="bs-content" placeholder="Tulis konten section di sini... (mendukung Markdown: **bold**, *italic*, \`code\`, list, dll)">${escapeHtml(section.content)}</textarea>
+        <div class="body-section-footer">
+          <div class="format-hint">
+            <span class="material-icons">info</span>
+            <span>Markdown supported • ${section.content.length} chars</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(item);
+    });
+
+    container.querySelectorAll('input[data-type="bs-heading"]').forEach(inp => {
+      inp.addEventListener('input', e => {
+        const idx = parseInt(e.target.dataset.idx);
+        state.bodySections[idx].heading = e.target.value;
+        saveAndRender();
+      });
+    });
+    container.querySelectorAll('textarea[data-type="bs-content"]').forEach(ta => {
+      ta.addEventListener('input', e => {
+        const idx = parseInt(e.target.dataset.idx);
+        state.bodySections[idx].content = e.target.value;
+        const footer = e.target.closest('.body-section-item').querySelector('.format-hint span:last-child');
+        if (footer) footer.textContent = `Markdown supported • ${e.target.value.length} chars`;
+        saveAndRender();
+      });
+    });
+  }
+
+  function addBodySection() {
+    state.bodySections.push({ heading: '', content: '' });
+    renderBodySections();
+    saveAndRender();
+    showSnackbar('Section ditambahkan');
+    setTimeout(() => {
+      const container = document.getElementById('body-sections-list');
+      const lastItem = container.lastElementChild;
+      if (lastItem) {
+        lastItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const headingInput = lastItem.querySelector('.heading-input');
+        if (headingInput) headingInput.focus();
+      }
+    }, 100);
+  }
+
+  function deleteBodySection(i) {
+    const section = state.bodySections[i];
+    const title = section.heading || `Section ${i+1}`;
+    showConfirm('Hapus Section', `Hapus section "${title}"?`, () => {
+      state.bodySections.splice(i, 1);
+      renderBodySections();
+      saveAndRender();
+    });
+  }
+
+  function moveBodySection(i, dir) {
+    const j = i + dir;
+    if (j < 0 || j >= state.bodySections.length) return;
+    [state.bodySections[i], state.bodySections[j]] = [state.bodySections[j], state.bodySections[i]];
+    renderBodySections();
+    saveAndRender();
+  }
+
+  function duplicateBodySection(i) {
+    const original = state.bodySections[i];
+    state.bodySections.splice(i + 1, 0, {
+      heading: original.heading + ' (Copy)',
+      content: original.content
+    });
+    renderBodySections();
+    saveAndRender();
+    showSnackbar('Section diduplikat');
+  }
+
+  function loadPlaceholder() {
+    if (state.bodySections.length > 0) {
+      showConfirm('Load Contoh', 'Section yang ada akan diganti dengan contoh. Lanjutkan?', () => {
+        state.bodySections = JSON.parse(JSON.stringify(PLACEHOLDER_EXAMPLES));
+        renderBodySections();
+        saveAndRender();
+        showSnackbar('Contoh berhasil dimuat');
+      });
+    } else {
+      state.bodySections = JSON.parse(JSON.stringify(PLACEHOLDER_EXAMPLES));
+      renderBodySections();
+      saveAndRender();
+      showSnackbar('Contoh berhasil dimuat');
+    }
+  }
+
+  renderBodySections();
+
+  // ============ YAML GENERATION ============
+  function needsQuotes(val) {
+    if (typeof val !== 'string') return false;
+    if (val === '') return true;
+    if (/[:#\[\]{}|>&*!%@`,"']/.test(val)) return true;
+    if (/^(true|false|yes|no|null|~)$/i.test(val)) return true;
+    if (/^\d/.test(val) && !/^\d+$/.test(val)) return true;
+    if (val.includes('\n')) return true;
+    return false;
+  }
+
+  function yamlValue(val) {
+    if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+    if (val === null || val === undefined) return '""';
+    const s = String(val);
+    if (needsQuotes(s)) {
+      return '"' + s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"';
+    }
+    return s;
+  }
+
+  function generateYAML() {
+    let lines = [];
+    lines.push('---');
+    lines.push('layout: post');
+    
+    if (state.title) lines.push(`title: ${yamlValue(state.title)}`);
+    lines.push(`date: ${state.date}`);
+    
+    if (state.categories.length > 0) {
+      lines.push(`categories: [${state.categories.map(yamlValue).join(', ')}]`);
+    }
+    if (state.image) lines.push(`image: ${yamlValue(state.image)}`);
+    if (state.description) lines.push(`description: ${yamlValue(state.description)}`);
+    if (state.model) lines.push(`model: ${yamlValue(state.model)}`);
+    if (state.prompt) lines.push(`prompt: ${yamlValue(state.prompt)}`);
+    if (state.negative_prompt) lines.push(`negative_prompt: ${yamlValue(state.negative_prompt)}`);
+    
+    const paramEntries = Object.entries(state.parameters).filter(([,v]) => v !== '');
+    if (paramEntries.length > 0) {
+      lines.push('parameters:');
+      paramEntries.forEach(([k, v]) => {
+        lines.push(`  ${k}: ${yamlValue(v)}`);
+      });
+    }
+    
+    lines.push('---');
+    return lines.join('\n');
+  }
+
+  function generateBodyMarkdown() {
+    if (state.bodySections.length === 0) return '';
+    return state.bodySections
+      .filter(s => s.heading.trim() || s.content.trim())
+      .map(s => {
+        const heading = s.heading.trim() ? `## ${s.heading.trim()}` : '';
+        const content = s.content.trim();
+        return [heading, content].filter(Boolean).join('\n\n');
+      })
+      .filter(Boolean)
+      .join('\n\n');
+  }
+
+  function generateFullOutput() {
+    const yaml = generateYAML();
+    const body = generateBodyMarkdown();
+    return yaml + (body ? '\n\n' + body : '');
+  }
+
+  // ============ SYNTAX HIGHLIGHT ============
+  function highlightYAML(yaml) {
+    return yaml.split('\n').map(line => {
+      if (line === '---') return `<span class="punct">${line}</span>`;
+      const match = line.match(/^(\s*)([^:\s]+)(:)(.*)$/);
+      if (match) {
+        const [, indent, key, colon, rest] = match;
+        let valueHtml = '';
+        const trimmed = rest.trim();
+        if (trimmed === '') {
+          valueHtml = '';
+        } else if (/^-?\d+(\.\d+)?$/.test(trimmed)) {
+          valueHtml = `<span class="number">${trimmed}</span>`;
+        } else {
+          valueHtml = `<span class="string">${escapeHtml(trimmed)}</span>`;
+        }
+        return `${indent}<span class="key">${escapeHtml(key)}</span><span class="punct">${colon}</span> ${valueHtml}`;
+      }
+      return escapeHtml(line);
+    }).join('\n');
+  }
+
+  // ============ RENDER PREVIEW ============
+  function renderPreview() {
+    const yaml = generateYAML();
+    document.getElementById('yaml-output').innerHTML = highlightYAML(yaml);
+    document.getElementById('raw-output').textContent = generateFullOutput();
+    
+    const rendered = document.getElementById('rendered-output');
+    let html = '';
+    if (state.title) html += `<h1>${escapeHtml(state.title)}</h1>`;
+    
+    const meta = [];
+    if (state.date) meta.push(`📅 ${state.date}`);
+    if (state.categories.length) meta.push(`🏷️ ${state.categories.join(', ')}`);
+    if (state.model) meta.push(`🤖 ${state.model}`);
+    if (meta.length) html += `<p style="color:var(--iron-text-dim);font-size:13px;margin-bottom:16px">${meta.join(' • ')}</p>`;
+    
+    if (state.image) {
+      html += `<div style="margin:16px 0;padding:12px;background:var(--iron-dark);border-radius:8px;border-left:3px solid var(--iron-gold)">
+        <div style="font-size:11px;color:var(--iron-text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Featured Image</div>
+        <code style="color:var(--iron-gold);font-size:13px">${escapeHtml(state.image)}</code>
+      </div>`;
+    }
+    
+    if (state.description) {
+      html += `<blockquote>${escapeHtml(state.description)}</blockquote>`;
+    }
+    
+    if (state.prompt) {
+      html += `<div style="margin:16px 0">
+        <div style="font-size:11px;color:var(--iron-red-light);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🎨 Prompt</div>
+        <pre><code>${escapeHtml(state.prompt)}</code></pre>
+      </div>`;
+    }
+    
+    if (state.negative_prompt) {
+      html += `<div style="margin:16px 0">
+        <div style="font-size:11px;color:var(--iron-text-dim);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">🚫 Negative Prompt</div>
+        <pre><code>${escapeHtml(state.negative_prompt)}</code></pre>
+      </div>`;
+    }
+    
+    const paramEntries = Object.entries(state.parameters).filter(([,v]) => v !== '');
+    if (paramEntries.length > 0) {
+      html += `<div style="margin:16px 0">
+        <div style="font-size:11px;color:var(--iron-gold);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">⚙️ Parameters</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px">`;
+      paramEntries.forEach(([k, v]) => {
+        html += `<div style="background:var(--iron-dark);padding:8px 12px;border-radius:6px;border:1px solid var(--iron-border)">
+          <div style="font-size:10px;color:var(--iron-text-dim);text-transform:uppercase">${escapeHtml(k)}</div>
+          <div style="color:var(--iron-text);font-size:13px;margin-top:2px">${escapeHtml(v)}</div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    }
+    
+    const bodyMd = generateBodyMarkdown();
+    if (bodyMd) {
+      try {
+        html += marked.parse(bodyMd);
+      } catch(e) {
+        html += `<pre>${escapeHtml(bodyMd)}</pre>`;
+      }
+    }
+    
+    if (!html) {
+      html = '<div class="empty-state"><span class="material-icons">edit</span><p>Mulai mengisi form untuk melihat preview</p></div>';
+    }
+    
+    rendered.innerHTML = html;
+  }
+
+  // ============ SAVE ============
+  function saveAndRender() {
+    try {
+      localStorage.setItem('stark-editor-state-v2', JSON.stringify(state));
+    } catch(e) {}
+    renderPreview();
+  }
+
+  // ============ COPY ============
+  async function copyOutput() {
+    const output = generateFullOutput();
+    try {
+      await navigator.clipboard.writeText(output);
+      showSnackbar('Template berhasil disalin ke clipboard!');
+    } catch(e) {
+      const ta = document.createElement('textarea');
+      ta.value = output;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showSnackbar('Template berhasil disalin!');
+    }
+  }
+
+  // ============ RESET ============
+  function resetAll() {
+    showConfirm('Reset Semua', 'Semua data akan dihapus. Lanjutkan?', () => {
+      state = {
+        title: '',
+        date: new Date().toISOString().split('T')[0],
+        categories: [],
+        image: '',
+        description: '',
+        model: '',
+        prompt: '',
+        negative_prompt: '',
+        parameters: {},
+        bodySections: []
+      };
+      document.getElementById('f-title').value = '';
+      document.getElementById('f-date').value = state.date;
+      document.getElementById('f-image').value = '';
+      document.getElementById('f-description').value = '';
+      document.getElementById('f-model').value = '';
+      document.getElementById('f-prompt').value = '';
+      document.getElementById('f-negative-prompt').value = '';
+      renderCategories();
+      renderParameters();
+      renderBodySections();
+      saveAndRender();
+      showSnackbar('Template direset');
+    });
+  }
+
+  // ============ EXPORT/IMPORT ============
+  function exportJSON() {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `post-template-${state.date}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showSnackbar('Template diekspor');
+  }
+
+  function importJSON(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        state = { ...state, ...data };
+        // Filter categories
+        state.categories = (state.categories || []).filter(c => 
+          CATEGORY_OPTIONS.some(opt => opt.value === c)
+        );
+        document.getElementById('f-title').value = state.title || '';
+        document.getElementById('f-date').value = state.date || '';
+        document.getElementById('f-image').value = state.image || '';
+        document.getElementById('f-description').value = state.description || '';
+        document.getElementById('f-model').value = state.model || '';
+        document.getElementById('f-prompt').value = state.prompt || '';
+        document.getElementById('f-negative-prompt').value = state.negative_prompt || '';
+        renderCategories();
+        renderParameters();
+        renderBodySections();
+        saveAndRender();
+        showSnackbar('Template berhasil diimpor');
+      } catch(err) {
+        showSnackbar('File tidak valid', 'error');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  // ============ UTILS ============
+  function escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function showSnackbar(text, type = 'success') {
+    const sb = document.getElementById('snackbar');
+    const icon = sb.querySelector('.material-icons');
+    document.getElementById('snackbar-text').textContent = text;
+    icon.textContent = type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'check_circle';
+    icon.style.color = type === 'error' ? 'var(--iron-red-light)' : type === 'warning' ? 'var(--iron-gold)' : 'var(--iron-gold)';
+    sb.classList.add('show');
+    clearTimeout(sb._timer);
+    sb._timer = setTimeout(() => sb.classList.remove('show'), 2500);
+  }
+
+  function showConfirm(title, message, onOk) {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMessage').textContent = message;
+    const modal = document.getElementById('confirmModal');
+    modal.classList.add('show');
+    const okBtn = document.getElementById('confirmOk');
+    const newBtn = okBtn.cloneNode(true);
+    okBtn.parentNode.replaceChild(newBtn, okBtn);
+    newBtn.addEventListener('click', () => {
+      onOk();
+      closeConfirm();
+    });
+  }
+
+  function closeConfirm() {
+    document.getElementById('confirmModal').classList.remove('show');
+  }
+
+  // Initial render
+  renderPreview();
+</script>
+
+</body>
+</html>
+
